@@ -1,5 +1,5 @@
 ##################################################
-include   ../adm/Mkinclude
+include   ../adm/Mkinclude_linux_gfortran_gadi
 ##################################################
 TARGETS=\
 igetday \
