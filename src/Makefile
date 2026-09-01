@@ -13,7 +13,7 @@
 #==========================================================
 TOP := $(abspath ..)
 
-include   ../adm/Mkinclude
+include   ../adm/Mkinclude_linux_gfortran
 
 #=============================
 # These variables are optional.
@@ -69,9 +69,13 @@ SUBLIBS := $(foreach d,$(EXT_LIBS),$(abspath $(d))/lib$(notdir $(d)).a)
 #=============================
 #*** suffix rule
 .SUFFIXES : .o .F90 .f90
-.F90.o:
+# Disable GNU Make's built-in Modula-2 rule, which otherwise treats an
+# existing Fortran .mod file as the source for its matching .o file.
+%.o: %.mod
+
+%.o: %.F90
 	$(FCMP) $(FFLAGS) -c $(INCDIRS) $(MODS) $(CFLAGS) $< -o $@
-.f90.o:
+%.o: %.f90
 	$(FCMP) $(FFLAGS) -c $(INCDIRS) $(MODS) $(CFLAGS) $< -o $@
 
 #=============================
