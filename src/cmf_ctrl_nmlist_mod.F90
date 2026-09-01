@@ -33,7 +33,7 @@ SUBROUTINE CMF_CONFIG_NMLIST
 USE YOS_CMF_INPUT,      ONLY: TMPNAM,   NSETFILE,   CSETFILE
 ! run version
 USE YOS_CMF_INPUT,      ONLY: LADPSTP,  LFPLAIN,  LKINE,    LFLDOUT,  LPTHOUT,  LDAMOUT,  &
-                            & LROSPLIT, LGDWDLY,  LSLPMIX,  LMEANSL,  LSEALEV,  LOUTPUT,  &
+                            & LROSPLIT, LROAGG,   LGDWDLY,  LSLPMIX,  LMEANSL,  LSEALEV,  LOUTPUT,  &
                             & LRESTART, LSTOONLY, LGRIDMAP, LLEAPYR,  LMAPEND,  LBITSAFE, &
                             & LSTG_ES,  LLEVEE,   LOUTINS,  LOUTINI,  LSEDOUT,  LTRACE,   &
                             & LHEATLINK,                                                  &
@@ -51,7 +51,7 @@ IMPLICIT NONE
 CHARACTER(LEN=8)              :: CREG                 !! 
 !
 NAMELIST/NRUNVER/  LADPSTP,  LFPLAIN,  LKINE,    LFLDOUT,  LPTHOUT,  LDAMOUT,      &
-                   LROSPLIT, LGDWDLY,  LSLPMIX,  LMEANSL,  LSEALEV,  LOUTPUT,      &
+                   LROSPLIT, LROAGG,   LGDWDLY,  LSLPMIX,  LMEANSL,  LSEALEV,  LOUTPUT,      &
                    LRESTART, LSTOONLY, LGRIDMAP, LLEAPYR,  LMAPEND,  LBITSAFE,     &
                    LSTG_ES,  LLEVEE,   LSEDOUT,  LTRACE,   LHEATLINK, LOUTINS,  LSLOPEMOUTH,  &
                    LWEVAP,   LWEVAPFIX,LWEXTRACTRIV,       LOUTINI,  LSPAMAT,      &
@@ -87,6 +87,7 @@ LHEATLINK = .FALSE.          !! true: activate heatlink           (under develop
 LOUTINS  = .FALSE.           !! true: diagnose instantaneous discharge
 LSPAMAT  = .TRUE.            !! true: use quasi sparse matrix (fast but additional memory req)
 LUPSINF  = .FALSE.           !! true: use upstream inflow scheme
+LROAGG   = .FALSE.           !! true: add surface and sub-surface runoff before model analysis
 
 !!=== this part is used by ECMWF
 LROSPLIT = .FALSE.           !! true: input if surface (Qs) and sub-surface (Qsb) runoff
@@ -134,6 +135,7 @@ WRITE(LOGNAM,*) "LOUTINS ",  LOUTINS
 WRITE(LOGNAM,*) "LUPSINF ",  LUPSINF
 WRITE(LOGNAM,*) ""
 WRITE(LOGNAM,*) "LROSPLIT ", LROSPLIT
+WRITE(LOGNAM,*) "LROAGG   ", LROAGG
 WRITE(LOGNAM,*) "LWEVAP   ", LWEVAP
 WRITE(LOGNAM,*) "LWEVAPFIX", LWEVAPFIX
 WRITE(LOGNAM,*) "LWEXTRACTRIV", LWEXTRACTRIV
@@ -286,7 +288,7 @@ END SUBROUTINE CMF_CONFIG_NMLIST
 !####################################################################
 SUBROUTINE CMF_CONFIG_CHECK
 USE YOS_CMF_INPUT,      ONLY: LADPSTP,  LFPLAIN,  LKINE,    LPTHOUT,     &
-                            & LROSPLIT, LGDWDLY,  LSEALEV, &
+                            & LROSPLIT, LROAGG,   LGDWDLY,  LSEALEV, &
                             & LWEVAP,   LWEVAPFIX,LWEXTRACTRIV
 USE YOS_CMF_INPUT,      ONLY: DT, DTIN, DTSL
 IMPLICIT NONE
@@ -339,6 +341,12 @@ ENDIF
 IF ( LGDWDLY .AND. .NOT. LROSPLIT ) THEN
   WRITE(LOGNAM,*) "LGDWDLY=true and LROSPLIT=false"
   WRITE(LOGNAM,*) "Ground water reservoir can only be active when runoff splitting is on"
+ENDIF
+
+IF ( LROAGG .AND. .NOT. LROSPLIT ) THEN
+  WRITE(LOGNAM,*) "LROAGG=true and LROSPLIT=false"
+  WRITE(LOGNAM,*) "Runoff aggregation requires surface and sub-surface runoff input"
+  STOP 9
 ENDIF
 
 IF ( LWEVAPFIX .AND. .NOT. LWEVAP ) THEN

@@ -40,6 +40,7 @@ LOGICAL                         :: LLEVEE                  !! true: activate lev
 
 !~~ used in ECMWF
 LOGICAL                         :: LROSPLIT                !! true: input if surface (Qs) and sub-surface (Qsb) runoff
+LOGICAL                         :: LROAGG                  !! true: add surface and sub-surface runoff before model analysis
 LOGICAL                         :: LWEVAP                  !! true: input water evaporation to extract from floodplain
 LOGICAL                         :: LWEVAPFIX               !! true: water balance closure extracting water from evap when available
 LOGICAL                         :: LWEXTRACTRIV            !! true: also extract water from rivers 

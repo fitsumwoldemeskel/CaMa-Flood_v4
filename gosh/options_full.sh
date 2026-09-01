@@ -149,6 +149,7 @@ CROFSUF=".one"                              #   $(CROFPRE)YYYYMMDD$(CROFSUF)
 
 ###** sub-surface runoff scheme (not available with plain binary runoff)
 LROSPLIT=".FALSE."                          # .TRUE. for sub-surface runoff
+LROAGG=".FALSE."                            # .TRUE. to aggregate surface and sub-surface runoff before simulation
 ###CSUBDIR="NONE"                              # sub-surface runoff directory
 ###CSUBPRE="NONE"                              # sub-surface runoff prefix/suffix  
 ###CSUBSUF="NONE"                              #   $(PREFIX)YYYYMMDD$(SUFFIX)
@@ -291,6 +292,7 @@ LFLDOUT  = ${LFLDOUT}                  ! true: floodplain flow (high-water chann
 LPTHOUT  = ${LPTHOUT}                  ! true: activate bifurcation scheme
 LDAMOUT  = ${LDAMOUT}                  ! true: activate dam operation (under development)
 LROSPLIT = ${LROSPLIT}                 ! true: input if surface (Qs) and sub-surface (Qsb) runoff
+LROAGG   = ${LROAGG}                   ! true: add surface and sub-surface runoff before model analysis
 LGDWDLY  = ${LGDWDLY}                  ! true: Activate ground water reservoir and delay
 LSLPMIX  = .FALSE.                     ! true: activate mixed kinematic and local inertia based on slope
 LMEANSL  = ${LMEANSL}                  ! true: boundary condition for mean sea level

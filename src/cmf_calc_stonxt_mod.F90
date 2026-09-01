@@ -19,7 +19,7 @@ CONTAINS
 !####################################################################
 SUBROUTINE CMF_CALC_STONXT
 USE PARKIND1,           ONLY: JPIM, JPRB, JPRD
-USE YOS_CMF_INPUT,      ONLY: LGDWDLY,   DT,  LWEVAP, LLEVEE, LROSPLIT, LUPSINF
+USE YOS_CMF_INPUT,      ONLY: LGDWDLY,   DT,  LWEVAP, LLEVEE, LROSPLIT, LROAGG, LUPSINF
 USE YOS_CMF_MAP,        ONLY: NSEQALL
 USE YOS_CMF_PROG,       ONLY: D2RIVOUT,  D2FLDOUT,  P2RIVSTO,  P2FLDSTO,  D2RUNOFF, P2LEVSTO
 USE YOS_CMF_PROG,       ONLY: P2GDWSTO,  D2GDWRTN,  D2ROFSUB,  D2UPSINF,  D2WEVAP
@@ -34,7 +34,7 @@ REAL(KIND=JPRB),SAVE       ::  DRIVROF, DFLDROF, DWEVAPEX
 !================================================
 IF ( LGDWDLY ) THEN
   CALL CALC_GDWDLY
-ELSEIF( LROSPLIT )THEN  !! when using sub-surface ruboff without groundwater delay
+ELSEIF( LROSPLIT .AND. .NOT. LROAGG )THEN  !! when using sub-surface ruboff without groundwater delay
   ! No ground water delay 
   !$OMP PARALLEL DO SIMD
   DO ISEQ=1,NSEQALL

@@ -467,7 +467,7 @@ END SUBROUTINE CMF_FORCING_INIT
 
 !####################################################################
 SUBROUTINE CMF_FORCING_GET(PBUFF)
-USE YOS_CMF_INPUT,           ONLY: NXIN,NYIN,LROSPLIT, RMIS
+USE YOS_CMF_INPUT,           ONLY: NXIN,NYIN,LROSPLIT,LROAGG, RMIS
 USE CMF_UTILS_MOD,           ONLY: CMF_CheckNanB  !! check Udefined value
 ! read runoff from file
 IMPLICIT NONE
@@ -505,6 +505,11 @@ IF ( LROSPLIT ) THEN
     ENDDO
   ENDDO
 !$OMP END PARALLEL DO SIMD 
+ENDIF
+
+IF ( LROAGG ) THEN
+  PBUFF(:,:,1)=PBUFF(:,:,1)+PBUFF(:,:,2)
+  PBUFF(:,:,2)=0._JPRB
 ENDIF
 
 CONTAINS
