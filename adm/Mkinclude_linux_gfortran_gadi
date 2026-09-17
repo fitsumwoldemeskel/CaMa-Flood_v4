@@ -27,10 +27,10 @@ CFLAGS=$(DMPI) $(DCDF) $(DATM) $(DSINGLE)
 PRISM_PATH = /g/data/access/projects/access/data/ACCESS_CMIP5/pre-build/oasis3-mct_local/Linux
 
 # JULES build  
-#JULES_MOD_DIR = /g/data/ce10/JULES_v1/fcm_make/build/include
+JULES_MOD_DIR = /g/data/ce10/JULES_v1/fcm_make/build/include
 
-INC = -I/usr/local/include -I$(PRISM_PATH)/include #-I$(JULES_MOD_DIR) 
-LIB = -L/usr/local/lib -lnetcdff -L$(PRISM_PATH)/lib #-lpsmile.MPI1 -lmct -lmpeu -lscrip
+INC = -I/usr/local/include -I$(PRISM_PATH)/include -I$(PRISM_PATH)/build/lib/psmile.MPI1 -I$(JULES_MOD_DIR) 
+LIB = -L/usr/local/lib -lnetcdff -L$(PRISM_PATH)/lib -lpsmile.MPI1 -lmct -lmpeu -lscrip
 
 #==============================
 # FCMP: main program (src/), FC: pre/post process (map/ etc/)

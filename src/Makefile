@@ -13,7 +13,7 @@
 #==========================================================
 TOP := $(abspath ..)
 
-include   ../adm/Mkinclude_linux_gfortran
+include   ../adm/Mkinclude_linux_ifort_gadi
 
 #=============================
 # These variables are optional.
@@ -57,7 +57,8 @@ CTRL_OBJS = \
 	cmf_ctrl_time_mod.o     \
 	cmf_ctrl_maps_mod.o     \
 	cmf_ctrl_vars_mod.o     \
-	cmf_ctrl_nmlist_mod.o
+	cmf_ctrl_nmlist_mod.o      \
+	oasis_rivers_control_mod.o
 
 DRV_OBJS = \
 	cmf_drv_control_mod.o   \
@@ -100,8 +101,17 @@ src: drv
 #*** for main program
 SRC_SUBLIBS := $(wildcard $(SRC_ROOT)/*/lib*.a)
 TARGET = MAIN_cmf
-$(TARGET): src $(TARGET).o
-	$(FCMP) $(LFLAGS) $@.o $(OBJECTS) $(SUBLIBS) -o $@ $(LIBS)
+
+# JULES provides string_utils_mod/logging_mod/jules_*_mod used by oasis_rivers_control_mod.
+# JULES_OBJ_DIR is not distributed as an archive, so bundle its objects (excluding its own
+# main program) into a local static library and link it in.
+JULES_OBJ_DIR ?= $(dir $(JULES_MOD_DIR))o
+JULES_LIB = libjules.a
+$(JULES_LIB):
+	ar rcs $@ $$(find $(JULES_OBJ_DIR) -name '*.o' ! -name 'jules.o')
+
+$(TARGET): src $(TARGET).o $(JULES_LIB)
+	$(FCMP) $(LFLAGS) $@.o $(OBJECTS) $(SUBLIBS) $(JULES_LIB) -o $@ $(LIBS)
 	@install_name_tool -delete_rpath $(NETCDFDIR)/lib $@ 2>/dev/null || true
 $(TARGET).o: drv
 # bug in MacOSX libcama.a does not work
