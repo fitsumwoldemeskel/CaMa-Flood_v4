@@ -1,0 +1,55 @@
+#==========================================================
+# CaMa-Flood Mkinclude (for Linux, Intel fortran)
+#==========================================================
+RM = /bin/rm -f
+CP = /bin/cp
+
+#======================================
+# Pre-Prosessing options
+# DMPI=-DUseMPI_CMF        : activate MPI parallelization
+# DCDF=-DUseCDF_CMF        : activate netCDF, comment out when not needed
+# DSINGLE=-DSinglePrec_CMF : activate Single Precision Mode
+# DATM=-DNoAtom_CMF        : avoid OMP ATOMIC calculation (bit identical simulation)
+#======================================
+
+DCDF=-DUseCDF_CMF
+DMPI=-DUseMPI_CMF
+DSINGLE=-DSinglePrec_CMF
+#DATM=-DNoAtom_CMF
+
+CFLAGS=$(DMPI) $(DCDF) $(DATM) $(DSINGLE)
+
+#======================================
+# Intel Fortran: Linux
+#======================================
+
+# OASIS/PRISM root
+PRISM_PATH = /g/data/access/projects/access/data/ACCESS_CMIP5/pre-build/oasis3-mct_local/Linux
+
+# JULES build  
+JULES_MOD_DIR = /g/data/ce10/JULES_v1/fcm_make/build/include
+
+## without netCDF
+#INC  = -I/opt/intel/include
+#LIB  = -L/opt/intel/lib/intel64 -L/opt/intel/mkl/lib
+
+# with netCDF
+NETCDF_DIR = /apps/netcdf/4.8.0
+INC  = -I/opt/intel/include -I$(NETCDF_DIR)/include/Intel -I$(PRISM_PATH)/build/lib/psmile.MPI1 -I$(JULES_MOD_DIR)
+LIB  = -L/opt/intel/lib/intel64 -L/opt/intel/mkl/lib/intel64 -L$(NETCDF_DIR)/lib/Intel -Wl,-rpath,$(NETCDF_DIR)/lib/Intel -lnetcdff -lnetcdf -L$(PRISM_PATH)/lib -lpsmile.MPI1 -lmct -lmpeu -lscrip
+
+#==============================
+# FCMP: main program (src/), FC: pre/post process (map/ etc/)
+# NOTE: DMPI is active, so FCMP must be an MPI wrapper (e.g. `module load openmpi/4.1.5`
+# after intel-compiler, which makes mpif90 wrap ifort) to provide the MPI module/library.
+
+FCMP = mpif90 -qopenmp
+FC = ifort
+
+#LFLAGS =
+FFLAGS = -O3 -warn all -fpp -free -assume byterecl -heap-arrays -nogen-interface -lpthread -static-intel -align array64byte
+#FFLAGS = -O3 -warn all -fpp -free -assume byterecl -heap-arrays -nogen-interface -lpthread -static-intel -align array64byte -qopt-report=5 -qopt-report-phase=vec
+
+
+# Debug Mode
+#FFLAGS = -check all  -warn all -fpp -free -assume byterecl -heap-arrays -std -nogen-interface -lpthread -fpe0 -ftrapuv -traceback  -static-intel
