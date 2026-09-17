@@ -26,6 +26,7 @@ use cmf_ctrl_restart_mod,    only: CMF_RESTART_WRITE, restart_is_write_time
 use heatlink_config_mod,     only: init_heatlink_config
 use yos_cmf_input,           only: CSETFILE, LWEVAP, LLEVEE
 #endif
+USE oasis_rivers_control_mod, ONLY: oasis_init, oasis_finalise
 !** parallelization options**
 !$ USE OMP_LIB
 #ifdef UseMPI_CMF
@@ -64,9 +65,12 @@ INTEGER(KIND=JPIM)              :: ISTEPADV           ! time step to be advanced
 REAL(KIND=JPRB),ALLOCATABLE     :: ZBUFF(:,:,:)       ! Buffer to store forcing runoff
 !================================================
 !*** 0. MPI Initialization
+! oasis_init_comp/oasis_get_localcomm require MPI to already be initialized,
+! so MPI_Init (via CMF_MPI_INIT) must run before oasis_init().
 #ifdef UseMPI_CMF
 CALL CMF_MPI_INIT
 #endif
+CALL oasis_init() 
 
 !*** 1a. Namelist handling
 CALL CMF_DRV_INPUT
@@ -151,8 +155,10 @@ endif
 CALL CMF_DRV_END
 !*** 3b. MPI specific finalization
 #ifdef UseMPI_CMF
-CALL CMF_MPI_END
+!CALL CMF_MPI_END
 #endif
+
+CALL oasis_finalise() 
 
 !================================================
 
