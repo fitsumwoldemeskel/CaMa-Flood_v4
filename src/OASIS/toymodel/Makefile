@@ -11,7 +11,7 @@
 #==========================================================
 include Mkinclude_linux_ifort_gadi
 
-vpath %.F90 ..
+vpath %.F90 ../..
 # Local cmf_ctrl_forcing_mod.F90 overrides the shared one (make searches this directory first)
 
 # OASIS3-MCT root (provides mod_oasis.mod and libpsmile.MPI1/mct/mpeu/scrip)
@@ -59,9 +59,9 @@ cmf_drv_control_mod.o   \
 cmf_drv_advance_mod.o
 
 #=============================
-#*** output location: objects, .mod files and executable go to the parent src/ directory
+#*** output location: objects, .mod files and executable go to the CaMa-Flood src/ directory
 # (override with BINDIR=...)
-BINDIR ?= ..
+BINDIR ?= ../..
 OBJDIR = $(BINDIR)
 OBJS   = $(addprefix $(OBJDIR)/,$(OBJECTS))
 MODS_OUT = $(patsubst %.o,$(OBJDIR)/%.mod,$(OBJECTS))

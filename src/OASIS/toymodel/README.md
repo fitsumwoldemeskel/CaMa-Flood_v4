@@ -1,7 +1,7 @@
 # CaMa-Flood + OASIS3-MCT toy land model
 
 Self-contained coupling of CaMa-Flood (component `cmamod`) to the toy land model (`toymod`).
-The CaMa-Flood sources in `src/` are used unchanged (`vpath` in the Makefile).
+Location: `src/OASIS/toymodel/`. The CaMa-Flood sources in `src/` are used unchanged (`vpath ../..` in the Makefile).
 
 Files
 * `MAIN_cmf_toymodel.F90`: driver; receives runoff through OASIS instead of reading forcing files.
@@ -19,8 +19,3 @@ Notes
 * `CROFCDF` is ignored in this build, so no runoff file or time-range check is needed. The run's dates must still match the `RUNTIME` in `namcouple`.
 * OASIS finalises MPI (`CMF_MPI_END` is not called). `oasis_toy_grid` is only needed if OASIS must regrid.
 
-Things to know
-* No `LROAGG` switch: the driver sums surface and sub-surface runoff itself when `LROSPLIT=.FALSE.`.
-* The existing generic coupler in `src/OASIS/` is left alone; both couplers coexist.
-* The old `adm/Mkinclude*` edits from `oasis_testing_toy_model` are not applied (they are in `git stash`); the toy build settings live in this folder.
-* The build was verified on Gadi (Intel + OpenMPI); a coupled simulation has not been run.

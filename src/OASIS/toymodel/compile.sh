@@ -23,9 +23,9 @@ else
   make all || exit 1
 fi
 
-EXE=../$TARGET
+EXE=../../$TARGET
 if [ -r $EXE ]; then
-  echo "Compilation OK!  Executable created: $(cd .. && pwd)/$TARGET"
+  echo "Compilation OK!  Executable created: $(cd ../.. && pwd)/$TARGET"
 else
   echo "### ERROR in compile ###"
   echo "Problems during Compilation. Executable not created."
