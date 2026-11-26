@@ -12,6 +12,7 @@
 include Mkinclude_linux_ifort_gadi
 
 vpath %.F90 ..
+# Local cmf_ctrl_forcing_mod.F90 overrides the shared one (make searches this directory first)
 
 # OASIS3-MCT root (provides mod_oasis.mod and libpsmile.MPI1/mct/mpeu/scrip)
 PRISM_PATH ?= /g/data/access/projects/access/data/ACCESS_CMIP5/pre-build/oasis3-mct_local/Linux
@@ -58,25 +59,34 @@ cmf_drv_control_mod.o   \
 cmf_drv_advance_mod.o
 
 #=============================
-#*** suffix rule
-.SUFFIXES : .o .F90
-.F90.o:
-	$(FCMP) $(FFLAGS) -c $(INC) $(OASIS_INC) $(MODS) $(CFLAGS) $< -o $@
+#*** output location: objects, .mod files and executable go to the parent src/ directory
+# (override with BINDIR=...)
+BINDIR ?= ..
+OBJDIR = $(BINDIR)
+OBJS   = $(addprefix $(OBJDIR)/,$(OBJECTS))
+MODS_OUT = $(patsubst %.o,$(OBJDIR)/%.mod,$(OBJECTS))
+
+#=============================
+#*** compile rule (-module: write .mod files to OBJDIR, -I: find them there)
+$(OBJDIR)/%.o: %.F90
+	$(FCMP) $(FFLAGS) -module $(OBJDIR) -I$(OBJDIR) -c $(INC) $(OASIS_INC) $(CFLAGS) $< -o $@
 
 #=============================
 #*** for main program
 TARGET = MAIN_cmf_toymodel
+MAIN_OBJ = $(OBJDIR)/$(TARGET).o
 
-all: $(TARGET)
+all: $(BINDIR)/$(TARGET)
 
-$(TARGET): $(TARGET).o $(OBJECTS)
+$(BINDIR)/$(TARGET): $(MAIN_OBJ) $(OBJS)
 	$(FCMP) $(LFLAGS) $^ -o $@ $(LIB) $(OASIS_LIB)
 
-# module dependencies not tracked by suffix rule
-oasis_toy_model_receive_mod.o: yos_cmf_map.o
-$(TARGET).o: $(OBJECTS)
+# module dependencies not tracked by compile rule
+$(OBJDIR)/oasis_toy_model_receive_mod.o: $(OBJDIR)/yos_cmf_map.o
+$(MAIN_OBJ): $(OBJS)
 
 #=============================
 #*** general rule
+# remove only the toymodel's own files by name (src/ also holds the regular CaMa-Flood build)
 clean:
-	${RM} -rf *.o core *~ *trace temp* *.mod *.a *.s *.dSYM $(TARGET)
+	${RM} -rf core *~ *trace temp* *.s *.dSYM $(MAIN_OBJ) $(OBJS) $(MODS_OUT) $(OBJDIR)/$(TARGET).mod $(BINDIR)/$(TARGET)
