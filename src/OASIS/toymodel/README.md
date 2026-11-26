@@ -8,7 +8,7 @@ Files
 * `oasis_toy_model_receive_mod.F90`: receive-only OASIS3-MCT interface (`cmamod`, grid `cama`, fields `surf_roff`, `sub_surf_roff`). Rank 0 of the component owns the `NXIN x NYIN` grid and broadcasts it to the other ranks.
 * `Mkinclude_linux_ifort_gadi`: Gadi Intel/OpenMPI/netCDF/OASIS settings (MPI and netCDF enabled).
 * `cmf_ctrl_forcing_mod.F90`: local copy of the shared CaMa-Flood module. It overrides the one in `src/` (make searches this folder first). Its only change: the netCDF forcing file (`CROFCDF`) is no longer opened or time-checked, since runoff comes from OASIS. The shared `src/cmf_ctrl_forcing_mod.F90` is untouched. If the shared module changes, this copy must be updated by hand.
-* `Makefile`: builds `MAIN_cmf_toymodel`, and its objects and `.mod` files, into the parent `src/` directory (override with `BINDIR=<dir>`). `make clean` removes only the toymodel's own files; the regular CaMa-Flood build in `src/` is untouched.
+* `Makefile`: builds `MAIN_cmf_toymodel` into `src/` (override with `BINDIR=<dir>`). Objects and `.mod` files stay in this folder, so they do not clash with the regular CaMa-Flood or OASIS builds in `src/`. `make clean` removes them and the executable.
 * `compile.sh`: wrapper around `make` (`./compile.sh [clean|no]`).
 
 Build (Gadi): `module load intel-compiler/2021.10.0 netcdf/4.8.0 openmpi/4.1.5; make [PRISM_PATH=<oasis3-mct>]`

@@ -6,12 +6,15 @@
 #   make                                   # builds MAIN_cmf_oasis
 #   make PRISM_PATH=/path/to/oasis3-mct    # other OASIS3-MCT install
 #
-# Compiler / netCDF / MPI settings come from ../../adm/Mkinclude;
+# Compiler / netCDF / MPI settings come from MKINCLUDE (default: Mkinclude_linux_ifort_gadi);
 # MPI (-DUseMPI_CMF) must be enabled there and FCMP must be an MPI wrapper.
+# Other platform: make MKINCLUDE=../../adm/Mkinclude_<platform>
 #==========================================================
-include ../../adm/Mkinclude
+MKINCLUDE ?= Mkinclude_linux_ifort_gadi
+include $(MKINCLUDE)
 
-VPATH = ../
+# Sources: this folder first (OASIS-specific cmf_ctrl_forcing_mod.F90 overrides the shared one), then ../
+vpath %.F90 . ../
 
 # OASIS3-MCT root (provides mod_oasis.mod and libpsmile.MPI1/mct/mpeu/scrip)
 PRISM_PATH ?= /g/data/access/projects/access/data/ACCESS_CMIP5/pre-build/oasis3-mct_local/Linux
@@ -59,7 +62,14 @@ cmf_drv_control_mod.o   \
 cmf_drv_advance_mod.o
 
 #=============================
-#*** suffix rule
+#*** output location: objects and .mod files stay in this folder (they would clash with the
+# regular / toymodel builds in src/); only the executable goes to src/ (override with BINDIR=...)
+BINDIR ?= ..
+
+#=============================
+#*** suffix rule (-module: write .mod files here, -I: find them here)
+MODS = -module . -I.
+.SUFFIXES:
 .SUFFIXES : .o .F90
 .F90.o:
 	$(FCMP) $(FFLAGS) -c $(INC) $(OASIS_INC) $(MODS) $(CFLAGS) $< -o $@
@@ -68,16 +78,18 @@ cmf_drv_advance_mod.o
 #*** for main program
 TARGET = MAIN_cmf_oasis
 
-all: $(TARGET)
+all: $(BINDIR)/$(TARGET)
 
-$(TARGET): $(TARGET).o $(OBJECTS)
+# OBJECTS first so modules are compiled in list order (parkind1.mod before its users)
+$(BINDIR)/$(TARGET): $(OBJECTS) $(TARGET).o
 	$(FCMP) $(LFLAGS) $^ -o $@ $(LIB) $(OASIS_LIB)
 
 # module dependencies not tracked by suffix rule
+yos_cmf_oasis.o: parkind1.o
 cmf_ctrl_oasis_mod.o: yos_cmf_oasis.o yos_cmf_input.o yos_cmf_map.o cmf_utils_mod.o
-$(TARGET).o: cmf_ctrl_oasis_mod.o cmf_ctrl_forcing_mod.o cmf_drv_control_mod.o cmf_drv_advance_mod.o
+$(TARGET).o: $(OBJECTS)
 
 #=============================
 #*** general rule
 clean:
-	${RM} -rf *.o core *~ *trace temp* *.mod *.a *.s *.dSYM $(TARGET)
+	${RM} -rf *.o core *~ *trace temp* *.mod *.a *.s *.dSYM $(BINDIR)/$(TARGET)

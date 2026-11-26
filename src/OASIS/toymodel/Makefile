@@ -59,34 +59,33 @@ cmf_drv_control_mod.o   \
 cmf_drv_advance_mod.o
 
 #=============================
-#*** output location: objects, .mod files and executable go to the CaMa-Flood src/ directory
-# (override with BINDIR=...)
+#*** output location: objects and .mod files stay in this folder (they would clash with the
+# regular / OASIS builds in src/); only the executable goes to src/ (override with BINDIR=...)
 BINDIR ?= ../..
-OBJDIR = $(BINDIR)
-OBJS   = $(addprefix $(OBJDIR)/,$(OBJECTS))
-MODS_OUT = $(patsubst %.o,$(OBJDIR)/%.mod,$(OBJECTS))
 
 #=============================
-#*** compile rule (-module: write .mod files to OBJDIR, -I: find them there)
-$(OBJDIR)/%.o: %.F90
-	$(FCMP) $(FFLAGS) -module $(OBJDIR) -I$(OBJDIR) -c $(INC) $(OASIS_INC) $(CFLAGS) $< -o $@
+#*** suffix rule (-module: write .mod files here, -I: find them here)
+MODS = -module . -I.
+.SUFFIXES:
+.SUFFIXES : .o .F90
+.F90.o:
+	$(FCMP) $(FFLAGS) -c $(INC) $(OASIS_INC) $(MODS) $(CFLAGS) $< -o $@
 
 #=============================
 #*** for main program
 TARGET = MAIN_cmf_toymodel
-MAIN_OBJ = $(OBJDIR)/$(TARGET).o
 
 all: $(BINDIR)/$(TARGET)
 
-$(BINDIR)/$(TARGET): $(MAIN_OBJ) $(OBJS)
+# OBJECTS first so modules are compiled in list order (parkind1.mod before its users)
+$(BINDIR)/$(TARGET): $(OBJECTS) $(TARGET).o
 	$(FCMP) $(LFLAGS) $^ -o $@ $(LIB) $(OASIS_LIB)
 
-# module dependencies not tracked by compile rule
-$(OBJDIR)/oasis_toy_model_receive_mod.o: $(OBJDIR)/yos_cmf_map.o
-$(MAIN_OBJ): $(OBJS)
+# module dependencies not tracked by suffix rule
+oasis_toy_model_receive_mod.o: yos_cmf_map.o
+$(TARGET).o: $(OBJECTS)
 
 #=============================
 #*** general rule
-# remove only the toymodel's own files by name (src/ also holds the regular CaMa-Flood build)
 clean:
-	${RM} -rf core *~ *trace temp* *.s *.dSYM $(MAIN_OBJ) $(OBJS) $(MODS_OUT) $(OBJDIR)/$(TARGET).mod $(BINDIR)/$(TARGET)
+	${RM} -rf *.o core *~ *trace temp* *.mod *.a *.s *.dSYM $(BINDIR)/$(TARGET)

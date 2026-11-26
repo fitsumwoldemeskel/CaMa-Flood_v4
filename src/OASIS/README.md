@@ -25,4 +25,11 @@ Rules
 * Any number of CaMa-Flood processes (set the same number for the component in the launch command). The `NXIN x NYIN` input grid is split into contiguous point blocks (OASIS Apple partition); each process receives its block and `MPI_Allgatherv` assembles the full field on every process, as when each process reads the runoff file. Grid files are written by process 1 only. OASIS initialises/finalises MPI (`CMF_MPI_INIT/END` are not used).
 * Use `NXIN,NYIN` from the CaMa-Flood `diminfo`; with `LINTERP=.FALSE.` they must equal `NX,NY`.
 
-Build (Intel + OpenMPI, MPI enabled in `adm/Mkinclude`): `make PRISM_PATH=<oasis3-mct>`; output `MAIN_cmf_oasis`.
+Build (Gadi, Intel + OpenMPI + netCDF): `module load intel-compiler/2021.10.0 netcdf/4.8.0 openmpi/4.1.5`, then
+`./compile.sh` (or `make PRISM_PATH=<oasis3-mct>`); default settings: `Mkinclude_linux_ifort_gadi`, MPI on; output `src/MAIN_cmf_oasis`.
+`./compile.sh clean` cleans only, `./compile.sh no` rebuilds without cleaning.
+Other platform: `make MKINCLUDE=../../adm/Mkinclude_<platform>` (MPI must be enabled there).
+
+Runoff comes from OASIS, so the netCDF runoff file is not used: `cmf_ctrl_forcing_mod.F90` in this folder is a copy of the shared
+module in which `CMF_FORCING_INIT_CDF` does not open `CROFCDF` (no time check). Keep `LINPCDF=.TRUE.` in `input_cmf.nam`.
+Only the executable is written to `src/` (override with `BINDIR=<dir>`); objects and `.mod` files stay in this folder, so they do not clash with the regular or toymodel builds in `src/`.
